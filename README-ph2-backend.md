@@ -37,7 +37,7 @@ model and an array of image URLs in your Tweet model:
 ```js
 // backend/models/User.js
 
-const userSchema = Schema({
+const userSchema = new Schema({
   username: {
     type: String,
     required: true
@@ -53,7 +53,7 @@ const userSchema = Schema({
 ```js
 // backend/models/Tweet.js
 
-const tweetSchema = Schema({
+const tweetSchema = new Schema({
   author: {
     type: Schema.Types.ObjectId,
     ref: 'User'

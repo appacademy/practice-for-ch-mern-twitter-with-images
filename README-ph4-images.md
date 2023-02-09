@@ -132,7 +132,7 @@ the preview. To accomplish the latter, create a [`FileReader`] instance for each
 image in `files` and invoke [`readAsDataURL`] with the image `file` passed as
 the argument. This will trigger an async action. Define an `onload` property on
 the `FileReader` instance that points to a callback that will run after
-`readerAsDataURL` completes. In that callback, store `fileReader.result`--i.e.,
+`readAsDataURL` completes. In that callback, store `fileReader.result`--i.e.,
 the temporary URL--at the appropriate index of a URL array. If all the files
 have finished generating their URLs, then `setImageUrls` to the URL array.
 
@@ -167,6 +167,10 @@ Ultimately, your code should look something like this:
   }
 ```
 
+> **Note:** The above code completely replaces the images / image URLs each time
+> a user selects new images. Feel free to implement an alternative behavior
+> (e.g., appending new images to ones already selected) if you prefer.
+
 Top off your additions by adding some styling to __TweetCompose.css__:
 
 ```css
@@ -185,6 +189,52 @@ input[type=file] {
 [`FileReader`]: https://developer.mozilla.org/en-US/docs/Web/API/FileReader
 [`readAsDataURL`]: https://developer.mozilla.org/en-US/docs/Web/API/FileReader/readAsDataURL
 [filelist]: https://developer.mozilla.org/en-US/docs/Web/API/FileList
+
+### Clearing the image filenames on submit
+
+Your `handleSubmit` function currently clears the `images` and `imageUrls` state
+variables, but the images are still stored in `files`. As a result, the `Choose
+Files` field on your form will not reset when you submit. It will look like you
+still have the same images selected, but because you haven't stored these files
+in `images` again, submitting the form will **NOT** include those former images.
+(Remember that you only store images in `images` when the file input is
+updated.)
+
+To reset `files`, you need to set the input element's `value` to `null`.
+[`useRef`] is a great way to do this. Import [`useRef`] along with `useState`
+and `useEffect`, and declare the reference like this:
+
+```js
+// frontend/src/components/Tweets/TweetCompose.js
+
+const fileRef = useRef(null);
+```
+
+Assign this reference to `ref` when you declare the input element in the form
+itself:
+
+```js
+// frontend/src/components/Tweets/TweetCompose.js
+
+        <label>
+          Images to Upload
+          <input
+            type="file"
+            ref={fileRef}       // <-- ADD THIS LINE
+            accept=".jpg, .jpeg, .png"
+            multiple
+            onChange={updateFiles} />
+        </label>
+```
+
+This will store a link to the element in `fileRef.current`. You can then use
+this reference to update the value in your `handleSubmit` function:
+
+```js
+fileRef.current.value = null;
+```
+
+[`useRef`]: https://reactjs.org/docs/hooks-reference.html#useref
 
 ## Frontend: Sending the images
 
